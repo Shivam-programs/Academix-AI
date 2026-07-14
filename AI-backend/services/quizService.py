@@ -2,49 +2,65 @@ from datetime import datetime
 from typing import Optional
 from uuid import uuid4
 
+from config.db import db
 from schemas.quizSchema import QuizCreate, QuizResponse, QuizUpdate
-
-_quizzes: dict[str, QuizResponse] = {}
+print(db)
+print(type(db))
+collection = db["quizzes"]
 
 
 def create_quiz(payload: QuizCreate) -> QuizResponse:
-    quiz_id = str(uuid4())
     now = datetime.utcnow()
 
     quiz = QuizResponse(
-        id=quiz_id,
-        **payload.model_dump(),
+        id=str(uuid4()),
+        createdAt=now,
+        updatedAt=now,
+        **payload.model_dump()
     )
 
-    _quizzes[quiz_id] = quiz
+    collection.insert_one(quiz.model_dump())
+
     return quiz
 
 
 def get_quizzes() -> list[QuizResponse]:
-    return list(_quizzes.values())
+    quizzes = []
+
+    for doc in collection.find({}, {"_id": 0}):
+        quizzes.append(QuizResponse(**doc))
+
+    return quizzes
 
 
 def get_quiz(quiz_id: str) -> Optional[QuizResponse]:
-    return _quizzes.get(quiz_id)
+    doc = collection.find_one({"id": quiz_id}, {"_id": 0})
+
+    if doc is None:
+        return None
+
+    return QuizResponse(**doc)
 
 
 def update_quiz(quiz_id: str, payload: QuizUpdate) -> Optional[QuizResponse]:
-    quiz = _quizzes.get(quiz_id)
-    if quiz is None:
+    update_data = payload.model_dump(exclude_unset=True)
+
+    if not update_data:
+        return get_quiz(quiz_id)
+
+    update_data["updatedAt"] = datetime.utcnow()
+
+    result = collection.update_one(
+        {"id": quiz_id},
+        {"$set": update_data}
+    )
+
+    if result.matched_count == 0:
         return None
 
-    update_data = payload.model_dump(exclude_unset=True)
-    if not update_data:
-        return quiz
-
-    for field, value in update_data.items():
-        setattr(quiz, field, value)
-
-    quiz.updatedAt = datetime.utcnow()
-    _quizzes[quiz_id] = quiz
-    return quiz
+    return get_quiz(quiz_id)
 
 
 def delete_quiz(quiz_id: str) -> bool:
-    quiz = _quizzes.pop(quiz_id, None)
-    return quiz is not None
+    result = collection.delete_one({"id": quiz_id})
+    return result.deleted_count > 0

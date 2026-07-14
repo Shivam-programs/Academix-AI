@@ -21,5 +21,3 @@ class Quiz(BaseModel):
     difficulty: str
     totalQuestions: int
     questions: List[Question]
-    createdAt: datetime = Field(default_factory=datetime.utcnow)
-    updatedAt: datetime = Field(default_factory=datetime.utcnow)
