@@ -39,9 +39,70 @@ export async function teacherDashboard(req, res) {
         const institution = await Institutionmodel.findById(institutionId);
         const institutionName = institution ? institution.name : "N/A";
 
-        res.json({ institutionName, totalCourses,teacherFullName,  studentCount, teacherId, teacherName, teacherBio, teacherQualification, teacherSpecialization, teacherExperience, teacherProfilePicture });
+        res.json({ institutionName, totalCourses, teacherFullName, studentCount, teacherId, teacherName, teacherBio, teacherQualification, teacherSpecialization, teacherExperience, teacherProfilePicture });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server error" });
     }
 }
+
+export const instituteList = async (req, res) => {
+    try {
+        const institutes = await instituteModel
+            .find()
+            .select("-_id -userId -updatedAt -__v")
+            .sort({ instituteName: 1 });
+
+        res.json(institutes);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+export const myCourses = async (req, res) => {
+    try {
+        const teacher = await Teachermodel.findOne({ userId: req.user._id });
+        const courses = await CourseModel.find({ teachers: teacher._id });
+        res.json(courses);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+
+
+export const getClassroom = async (req, res) => {
+    try {
+        const teacher = await Teachermodel.findOne({
+            userId: req.user._id
+        });
+        if (!teacher) {
+            return res.status(404).json({
+                message: "Teacher not found"
+            });
+        }
+
+        const course = await CourseModel.findOne({
+            _id: req.params.courseId,
+            teachers: teacher._id
+        });
+
+        if (!course) {
+            return res.status(404).json({
+                message: "Course not found"
+            });
+        }
+
+        const assignments = await AssignmentModel.find({
+            courseId: course._id
+        });
+
+        res.json(assignments);
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+};

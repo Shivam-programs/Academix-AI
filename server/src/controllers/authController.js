@@ -154,7 +154,7 @@ export async function login(req, res) {
 
         await sendEmail(
             user.email,
-            "New Login Alert",
+            "Just checking—was this you?",
             "Your account was accessed from a new device.",
             alertHtml
         );
