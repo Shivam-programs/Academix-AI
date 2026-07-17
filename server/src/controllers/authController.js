@@ -489,6 +489,7 @@ export async function createTeacherProfile(req, res) {
 
         const teacher = await Teacher.create({
             userId: req.user._id,
+            FullName: req.body.FullName,
             phone: req.body.phone,
             qualification: req.body.qualification,
             specialization: req.body.specialization,

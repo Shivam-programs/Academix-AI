@@ -9,6 +9,10 @@ const teacherSchema = new mongoose.Schema({
         unique:true
     },
 
+    FullName:String,
+
+    phone:Number,
+
     qualification:String,
 
     specialization:String,
