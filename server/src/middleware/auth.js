@@ -60,3 +60,15 @@ export async function requireAuth(req, res, next) {
 
     }
 }
+
+
+export const isInstitution=async(req,res,next)=>{
+  try {
+    if(req.user.role==='Institution') return next();
+    else{
+      return res.status(403).json({message:"Access denied"})
+    }
+  } catch (error) {
+    return res.status(500).json({message:"Internal server error"})
+  }
+}

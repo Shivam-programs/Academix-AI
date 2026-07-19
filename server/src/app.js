@@ -3,8 +3,11 @@ import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes.js";
+import institutionRoutes from "./routes/institutionRoutes.js"
+import dotenv from "dotenv"
 import teacherRoutes from "./routes/teacherRoutes.js";
 
+dotenv.config();
 const app = express();
 
 app.use(
@@ -20,6 +23,7 @@ app.use(cookieParser());
 app.use(morgan("dev"));
 
 app.use("/api/auth", authRoutes);
+app.use("/api/institution",institutionRoutes);
 app.use("/api/teacher", teacherRoutes);
 
 export default app;

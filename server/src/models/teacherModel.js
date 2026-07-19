@@ -25,6 +25,8 @@ const teacherSchema = new mongoose.Schema({
 
     institutionId: {
     type: mongoose.Schema.Types.ObjectId,
+    ref: "Institution",
+    }
     ref: "Institution"}
 
 },{timestamps:true});
